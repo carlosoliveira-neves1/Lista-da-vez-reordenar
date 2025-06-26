@@ -212,20 +212,45 @@ function App() {
   }
 
   const handleStatusChange = (vendedorId, novoStatus) => {
-    setVendedores(prev =>
-      prev.map(v => {
-        if (v.id === vendedorId) {
-          const updated = { ...v, status: novoStatus }
-          if (novoStatus === 'servico' && v.status !== 'servico') {
-            updated.tempoServico = new Date()
-          } else if (novoStatus !== 'servico') {
-            updated.tempoServico = null
-          }
-          return updated
-        }
-        return v
-      })
-    )
+    setVendedores(prev => {
+      // 1) extrai o vendedor que vai mudar
+      const old = prev.find(v => v.id === vendedorId)
+      if (!old) return prev
+
+      // 2) cria o objeto atualizado
+      const updated = {
+        ...old,
+        status: novoStatus,
+        // tempoServico só para "servico"
+        tempoServico:
+          novoStatus === 'servico' && old.status !== 'servico'
+            ? new Date()
+            : novoStatus !== 'servico'
+              ? null
+              : old.tempoServico
+      }
+
+      // 3) tira ele da lista antiga
+      const without = prev.filter(v => v.id !== vendedorId)
+
+      // 4) separa em colunas sem ele
+      const espera  = without.filter(v => v.status === 'espera')
+      const servico = without.filter(v => v.status === 'servico')
+      const fora    = without.filter(v => v.status === 'fora')
+
+      // 5) monta a ordem colocando updated NO FIM da coluna correspondente
+      if (novoStatus === 'espera') {
+        return [...espera, updated, ...servico, ...fora]
+      }
+      if (novoStatus === 'servico') {
+        return [...espera, ...servico, updated, ...fora]
+      }
+      if (novoStatus === 'fora') {
+        return [...espera, ...servico, ...fora, updated]
+      }
+
+      return prev
+    })
   }
 
   const handleAdminAccess = () => setIsAdmin(true)
