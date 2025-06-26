@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { Button } from '@/components/ui/button.jsx'
@@ -18,81 +19,23 @@ import './App.css'
 
 // Dados de exemplo dos vendedores
 const initialVendedores = [
-  {
-    id: '1',
-    nome: 'Marcely',
-    foto: null,
-    status: 'espera',
-    empresa: 'Sucesso',
-    tempoServico: null
-  },
-  {
-    id: '2',
-    nome: 'Ariana',
-    foto: null,
-    status: 'espera',
-    empresa: 'Sucesso',
-    tempoServico: null
-  },
-  {
-    id: '3',
-    nome: 'Shirley',
-    foto: '/api/placeholder/40/40',
-    status: 'espera',
-    empresa: 'Sucesso',
-    tempoServico: null
-  },
-  {
-    id: '4',
-    nome: 'Thalissa',
-    foto: null,
-    status: 'espera',
-    empresa: 'Sucesso',
-    tempoServico: null
-  },
-  {
-    id: '5',
-    nome: 'Stefany',
-    foto: '/api/placeholder/40/40',
-    status: 'espera',
-    empresa: 'Sucesso',
-    tempoServico: null
-  },
-  {
-    id: '6',
-    nome: 'Luís',
-    foto: '/api/placeholder/40/40',
-    status: 'servico',
-    preferencia: 'Preferência do cliente',
-    tempoServico: new Date(Date.now() - 118 * 60 * 1000) // 1h58min atrás
-  },
-  {
-    id: '7',
-    nome: 'Victor',
-    foto: '/api/placeholder/40/40',
-    status: 'fora',
-    empresa: 'Dia finalizado',
-    tempoServico: null
-  },
-  {
-    id: '8',
-    nome: 'Hellen',
-    foto: null,
-    status: 'fora',
-    empresa: 'Dia finalizado',
-    tempoServico: null
-  }
+  { id: '1', nome: 'Marcely', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
+  { id: '2', nome: 'Ariana', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
+  { id: '3', nome: 'Shirley', foto: '/api/placeholder/40/40', status: 'espera', empresa: 'Sucesso', tempoServico: null },
+  { id: '4', nome: 'Thalissa', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
+  { id: '5', nome: 'Stefany', foto: '/api/placeholder/40/40', status: 'espera', empresa: 'Sucesso', tempoServico: null },
+  { id: '6', nome: 'Luís', foto: '/api/placeholder/40/40', status: 'servico', preferencia: 'Preferência do cliente', tempoServico: new Date(Date.now() - 118 * 60 * 1000) },
+  { id: '7', nome: 'Victor', foto: '/api/placeholder/40/40', status: 'fora', empresa: 'Dia finalizado', tempoServico: null },
+  { id: '8', nome: 'Hellen', foto: null, status: 'fora', empresa: 'Dia finalizado', tempoServico: null }
 ]
 
 function VendedorCard({ vendedor, index, onStatusChange }) {
-  const getInitials = (nome) => {
-    return nome.split(' ').map(n => n[0]).join('').toUpperCase()
-  }
+  const getInitials = (nome) =>
+    nome.split(' ').map(n => n[0]).join('').toUpperCase()
 
   const formatTempo = (tempoInicio) => {
     if (!tempoInicio) return null
-    const agora = new Date()
-    const diff = agora - tempoInicio
+    const diff = Date.now() - tempoInicio
     const horas = Math.floor(diff / (1000 * 60 * 60))
     const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
     return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`
@@ -113,32 +56,28 @@ function VendedorCard({ vendedor, index, onStatusChange }) {
                 <div className="flex items-center justify-center w-2 h-8">
                   <div className="grid grid-cols-2 gap-1">
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-gray-600 transition-colors"></div>
+                      <div key={i} className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-gray-600 transition-colors" />
                     ))}
                   </div>
                 </div>
-                
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={vendedor.foto} alt={vendedor.nome} />
                   <AvatarFallback className="bg-gray-200 text-gray-600">
                     {getInitials(vendedor.nome)}
                   </AvatarFallback>
                 </Avatar>
-                
                 <div className="flex-1">
                   <h3 className="font-medium text-gray-900">{vendedor.nome}</h3>
                   <p className="text-sm text-gray-500">
                     {vendedor.preferencia || vendedor.empresa}
                   </p>
                 </div>
-                
                 <div className="flex items-center space-x-2">
                   {vendedor.status === 'servico' && vendedor.tempoServico && (
                     <Badge variant="secondary" className="text-xs">
                       {formatTempo(vendedor.tempoServico)}
                     </Badge>
                   )}
-                  
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -146,26 +85,14 @@ function VendedorCard({ vendedor, index, onStatusChange }) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem 
-                        onClick={() => onStatusChange(vendedor.id, 'espera')}
-                        className="flex items-center space-x-2"
-                      >
-                        <Clock className="w-4 h-4" />
-                        <span>Em espera</span>
+                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'espera')} className="flex items-center space-x-2">
+                        <Clock className="w-4 h-4" /><span>Em espera</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => onStatusChange(vendedor.id, 'servico')}
-                        className="flex items-center space-x-2"
-                      >
-                        <UserCheck className="w-4 h-4" />
-                        <span>Em serviço</span>
+                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'servico')} className="flex items-center space-x-2">
+                        <UserCheck className="w-4 h-4" /><span>Em serviço</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => onStatusChange(vendedor.id, 'fora')}
-                        className="flex items-center space-x-2"
-                      >
-                        <UserX className="w-4 h-4" />
-                        <span>Fora da loja</span>
+                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'fora')} className="flex items-center space-x-2">
+                        <UserX className="w-4 h-4" /><span>Fora da loja</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -206,26 +133,28 @@ function StatusColumn({ title, vendedores, droppableId, onStatusChange }) {
           </Button>
         )}
       </div>
-      
+
       <Droppable droppableId={droppableId}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={`min-h-32 p-2 rounded-lg transition-colors ${
-              snapshot.isDraggingOver ? 'bg-blue-50 border-2 border-blue-200 border-dashed' : 'bg-transparent'
+              snapshot.isDraggingOver
+                ? 'bg-blue-50 border-2 border-blue-200 border-dashed'
+                : 'bg-transparent'
             }`}
           >
             {vendedores.map((vendedor, index) => (
-              <VendedorCard 
-                key={vendedor.id} 
-                vendedor={vendedor} 
+              <VendedorCard
+                key={vendedor.id}
+                vendedor={vendedor}
                 index={index}
                 onStatusChange={onStatusChange}
               />
             ))}
             {provided.placeholder}
-            
+
             {vendedores.length === 0 && (
               <div className="text-center py-8 text-gray-400">
                 <p>Nenhum vendedor nesta lista</p>
@@ -249,6 +178,7 @@ function App() {
 
     if (!destination) return
 
+    // sem movimento
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
@@ -256,58 +186,59 @@ function App() {
       return
     }
 
-    // Atualizar status do vendedor baseado na coluna de destino
-    const novoStatus = destination.droppableId
-    handleStatusChange(draggableId, novoStatus)
+    // reordena dentro da mesma coluna
+    if (destination.droppableId === source.droppableId) {
+      const status = source.droppableId
+      const reordered = vendedores.filter(v => v.status === status)
+      const [moved] = reordered.splice(source.index, 1)
+      reordered.splice(destination.index, 0, moved)
+
+      const newEspera = status === 'espera'
+        ? reordered
+        : vendedores.filter(v => v.status === 'espera')
+      const newServico = status === 'servico'
+        ? reordered
+        : vendedores.filter(v => v.status === 'servico')
+      const newFora = status === 'fora'
+        ? reordered
+        : vendedores.filter(v => v.status === 'fora')
+
+      setVendedores([...newEspera, ...newServico, ...newFora])
+      return
+    }
+
+    // movido para outra coluna: apenas atualiza status
+    handleStatusChange(draggableId, destination.droppableId)
   }
 
   const handleStatusChange = (vendedorId, novoStatus) => {
-    setVendedores(prev => prev.map(vendedor => {
-      if (vendedor.id === vendedorId) {
-        const vendedorAtualizado = { 
-          ...vendedor, 
-          status: novoStatus 
+    setVendedores(prev =>
+      prev.map(v => {
+        if (v.id === vendedorId) {
+          const updated = { ...v, status: novoStatus }
+          if (novoStatus === 'servico' && v.status !== 'servico') {
+            updated.tempoServico = new Date()
+          } else if (novoStatus !== 'servico') {
+            updated.tempoServico = null
+          }
+          return updated
         }
-        
-        // Se mudou para "em serviço", registrar tempo de início
-        if (novoStatus === 'servico' && vendedor.status !== 'servico') {
-          vendedorAtualizado.tempoServico = new Date()
-        }
-        // Se saiu de "em serviço", limpar tempo
-        else if (novoStatus !== 'servico') {
-          vendedorAtualizado.tempoServico = null
-        }
-        
-        return vendedorAtualizado
-      }
-      return vendedor
-    }))
+        return v
+      })
+    )
   }
 
-  const handleAdminAccess = () => {
-    setIsAdmin(true)
-  }
-
-  const handleAdminLogin = (success) => {
-    if (success) {
-      setIsLoggedIn(true)
-    }
-  }
-
+  const handleAdminAccess = () => setIsAdmin(true)
+  const handleAdminLogin = (success) => success && setIsLoggedIn(true)
   const handleAdminLogout = () => {
     setIsAdmin(false)
     setIsLoggedIn(false)
   }
 
-  // Se está no modo admin mas não logado, mostrar tela de login
-  if (isAdmin && !isLoggedIn) {
-    return <AdminLogin onLogin={handleAdminLogin} />
-  }
-
-  // Se está logado como admin, mostrar painel administrativo
+  if (isAdmin && !isLoggedIn) return <AdminLogin onLogin={handleAdminLogin} />
   if (isAdmin && isLoggedIn) {
     return (
-      <AdminPanel 
+      <AdminPanel
         vendedores={vendedores}
         onVendedoresChange={setVendedores}
         onLogout={handleAdminLogout}
@@ -325,12 +256,9 @@ function App() {
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm">
-              <Menu className="w-5 h-5" />
-            </Button>
+            <Button variant="ghost" size="sm"><Menu className="w-5 h-5" /></Button>
             <h1 className="text-xl font-semibold text-gray-900">Lista da Vez</h1>
           </div>
-          
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1 text-sm text-gray-500">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -346,19 +274,17 @@ function App() {
         </div>
       </header>
 
-      {/* Navigation Tabs */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start bg-white border-b border-gray-200 rounded-none h-12 px-4">
           <TabsTrigger value="lista" className="flex items-center space-x-2">
-            <Users className="w-4 h-4" />
-            <span>Lista da Vez</span>
+            <Users className="w-4 h-4" /><span>Lista da Vez</span>
           </TabsTrigger>
           <TabsTrigger value="campanhas" className="flex items-center space-x-2">
             <span>Campanhas</span>
           </TabsTrigger>
           <TabsTrigger value="rankings" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
-            <span>Rankings</span>
+            <BarChart3 className="w-4 h-4" /><span>Rankings</span>
           </TabsTrigger>
         </TabsList>
 
@@ -366,21 +292,19 @@ function App() {
           <DragDropContext onDragEnd={handleDragEnd}>
             <div className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatusColumn 
+                <StatusColumn
                   title="Lista de espera"
                   vendedores={vendedoresEspera}
                   droppableId="espera"
                   onStatusChange={handleStatusChange}
                 />
-                
-                <StatusColumn 
+                <StatusColumn
                   title="Em serviço"
                   vendedores={vendedoresServico}
                   droppableId="servico"
                   onStatusChange={handleStatusChange}
                 />
-                
-                <StatusColumn 
+                <StatusColumn
                   title="Fora da loja"
                   vendedores={vendedoresFora}
                   droppableId="fora"
@@ -392,20 +316,16 @@ function App() {
         </TabsContent>
 
         <TabsContent value="campanhas" className="mt-0">
-          <div className="p-4">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Campanhas</h3>
-              <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
-            </div>
+          <div className="p-4 text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Campanhas</h3>
+            <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
           </div>
         </TabsContent>
 
         <TabsContent value="rankings" className="mt-0">
-          <div className="p-4">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Rankings</h3>
-              <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
-            </div>
+          <div className="p-4 text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Rankings</h3>
+            <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
           </div>
         </TabsContent>
       </Tabs>
@@ -414,4 +334,3 @@ function App() {
 }
 
 export default App
-
