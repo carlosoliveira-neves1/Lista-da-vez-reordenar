@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import { Button } from '@/components/ui/button.jsx'
 import { Card, CardContent } from '@/components/ui/card.jsx'
@@ -168,7 +168,19 @@ function StatusColumn({ title, vendedores, droppableId, onStatusChange }) {
 }
 
 function App() {
-  const [vendedores, setVendedores] = useState(initialVendedores)
+  const [vendedores, setVendedores] = useState(() => {
+    const stored = localStorage.getItem('vendedores')
+    if (stored) {
+      return JSON.parse(stored, (k, v) =>
+        k === 'tempoServico' && v ? new Date(v) : v
+      )
+    }
+    return initialVendedores
+  })
+  useEffect(() => {
+    localStorage.setItem('vendedores', JSON.stringify(vendedores))
+  }, [vendedores])
+
   const [activeTab, setActiveTab] = useState('lista')
   const [isAdmin, setIsAdmin] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -213,15 +225,12 @@ function App() {
 
   const handleStatusChange = (vendedorId, novoStatus) => {
     setVendedores(prev => {
-      // 1) extrai o vendedor que vai mudar
       const old = prev.find(v => v.id === vendedorId)
       if (!old) return prev
 
-      // 2) cria o objeto atualizado
       const updated = {
         ...old,
         status: novoStatus,
-        // tempoServico só para "servico"
         tempoServico:
           novoStatus === 'servico' && old.status !== 'servico'
             ? new Date()
@@ -230,15 +239,11 @@ function App() {
               : old.tempoServico
       }
 
-      // 3) tira ele da lista antiga
       const without = prev.filter(v => v.id !== vendedorId)
-
-      // 4) separa em colunas sem ele
       const espera  = without.filter(v => v.status === 'espera')
       const servico = without.filter(v => v.status === 'servico')
       const fora    = without.filter(v => v.status === 'fora')
 
-      // 5) monta a ordem colocando updated NO FIM da coluna correspondente
       if (novoStatus === 'espera') {
         return [...espera, updated, ...servico, ...fora]
       }
@@ -283,79 +288,3 @@ function App() {
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm"><Menu className="w-5 h-5" /></Button>
             <h1 className="text-xl font-semibold text-gray-900">Lista da Vez</h1>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1 text-sm text-gray-500">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Online</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={handleAdminAccess}>
-              <Shield className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Settings className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start bg-white border-b border-gray-200 rounded-none h-12 px-4">
-          <TabsTrigger value="lista" className="flex items-center space-x-2">
-            <Users className="w-4 h-4" /><span>Lista da Vez</span>
-          </TabsTrigger>
-          <TabsTrigger value="campanhas" className="flex items-center space-x-2">
-            <span>Campanhas</span>
-          </TabsTrigger>
-          <TabsTrigger value="rankings" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" /><span>Rankings</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="lista" className="mt-0">
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatusColumn
-                  title="Lista de espera"
-                  vendedores={vendedoresEspera}
-                  droppableId="espera"
-                  onStatusChange={handleStatusChange}
-                />
-                <StatusColumn
-                  title="Em serviço"
-                  vendedores={vendedoresServico}
-                  droppableId="servico"
-                  onStatusChange={handleStatusChange}
-                />
-                <StatusColumn
-                  title="Fora da loja"
-                  vendedores={vendedoresFora}
-                  droppableId="fora"
-                  onStatusChange={handleStatusChange}
-                />
-              </div>
-            </div>
-          </DragDropContext>
-        </TabsContent>
-
-        <TabsContent value="campanhas" className="mt-0">
-          <div className="p-4 text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Campanhas</h3>
-            <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="rankings" className="mt-0">
-          <div className="p-4 text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Rankings</h3>
-            <p className="text-gray-500">Funcionalidade em desenvolvimento</p>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  )
-}
-
-export default App
