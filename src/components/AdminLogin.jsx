@@ -1,120 +1,102 @@
-// src/App.jsx
-import { useState, useEffect } from 'react'
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+// src/components/AdminLogin.jsx
+import { useState } from 'react'
 import { Button } from '@/components/ui/button.jsx'
-import { Card, CardContent } from '@/components/ui/card.jsx'
-import { Badge } from '@/components/ui/badge.jsx'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar.jsx'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.jsx'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu.jsx'
-import { Menu, Settings, Users, BarChart3, MoreVertical, Clock, UserCheck, UserX, Shield } from 'lucide-react'
-import AdminLogin from './components/AdminLogin.jsx'
-import AdminPanel from './components/AdminPanel.jsx'
-import './App.css'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import { Input } from '@/components/ui/input.jsx'
+import { Label } from '@/components/ui/label.jsx'
+import { Alert, AlertDescription } from '@/components/ui/alert.jsx'
+import { Lock, Eye, EyeOff } from 'lucide-react'
 
-// Dados de exemplo dos vendedores
-const initialVendedores = [
-  { id: '1', nome: 'Marcely', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
-  { id: '2', nome: 'Ariana', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
-  { id: '3', nome: 'Shirley', foto: '/api/placeholder/40/40', status: 'espera', empresa: 'Sucesso', tempoServico: null },
-  { id: '4', nome: 'Thalissa', foto: null, status: 'espera', empresa: 'Sucesso', tempoServico: null },
-  { id: '5', nome: 'Stefany', foto: '/api/placeholder/40/40', status: 'espera', empresa: 'Sucesso', tempoServico: null },
-  { id: '6', nome: 'Luís', foto: '/api/placeholder/40/40', status: 'servico', preferencia: 'Preferência do cliente', tempoServico: new Date(Date.now() - 118 * 60 * 1000) },
-  { id: '7', nome: 'Victor', foto: '/api/placeholder/40/40', status: 'fora', empresa: 'Dia finalizado', tempoServico: null },
-  { id: '8', nome: 'Hellen', foto: null, status: 'fora', empresa: 'Dia finalizado', tempoServico: null }
-]
+export default function AdminLogin({ onLogin }) {
+  const [credentials, setCredentials] = useState({ username: '', password: '' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-function VendedorCard({ vendedor, index, onStatusChange }) {
-  const getInitials = (nome) =>
-    nome.split(' ').map(n => n[0]).join('').toUpperCase()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-  const formatTempo = (tempoInicio) => {
-    if (!tempoInicio) return null
-    const diff = Date.now() - tempoInicio
-    const horas = Math.floor(diff / (1000 * 60 * 60))
-    const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`
+    // Simular autenticação: usuário fixo 'admin' e senha 'Mudar@1234'
+    setTimeout(() => {
+      if (credentials.username === 'admin' && credentials.password === 'Mudar@1234') {
+        onLogin(true)
+      } else {
+        setError('Usuário ou senha incorretos')
+      }
+      setLoading(false)
+    }, 1000)
   }
 
   return (
-    <Draggable draggableId={vendedor.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className={`mb-3 ${snapshot.isDragging ? 'opacity-75' : ''}`}
-        >
-          <Card className="cursor-pointer hover:shadow-md transition-all duration-200 group">
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-2 h-8">
-                  <div className="grid grid-cols-2 gap-1">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-gray-600 transition-colors" />
-                    ))}
-                  </div>
-                </div>
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={vendedor.foto} alt={vendedor.nome} />
-                  <AvatarFallback className="bg-gray-200 text-gray-600">
-                    {getInitials(vendedor.nome)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900">{vendedor.nome}</h3>
-                  <p className="text-sm text-gray-500">
-                    {vendedor.preferencia || vendedor.empresa}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  {vendedor.status === 'servico' && vendedor.tempoServico && (
-                    <Badge variant="secondary" className="text-xs">
-                      {formatTempo(vendedor.tempoServico)}
-                    </Badge>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <Lock className="w-6 h-6 text-blue-600" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Painel Administrativo</CardTitle>
+          <p className="text-gray-600">Faça login para gerenciar vendedores</p>
+        </CardHeader>
+        
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Usuário</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Digite seu usuário"
+                value={credentials.username}
+                onChange={(e) =>
+                  setCredentials(prev => ({ ...prev, username: e.target.value }))
+                }
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Digite sua senha"
+                  value={credentials.password}
+                  onChange={(e) =>
+                    setCredentials(prev => ({ ...prev, password: e.target.value }))
+                  }
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
                   )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'espera')} className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4" /><span>Em espera</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'servico')} className="flex items-center space-x-2">
-                        <UserCheck className="w-4 h-4" /><span>Em serviço</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStatusChange(vendedor.id, 'fora')} className="flex items-center space-x-2">
-                        <UserX className="w-4 h-4" /><span>Fora da loja</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </Draggable>
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
-
-function StatusColumn({ title, vendedores, droppableId, onStatusChange }) {
-  const getColumnIcon = () => {
-    switch (droppableId) {
-      case 'espera': return <Clock className="w-5 h-5 text-blue-600" />
-      case 'servico': return <UserCheck className="w-5 h-5 text-green-600" />
-      case 'fora': return <UserX className="w-5 h-5 text-gray-600" />
-      default: return null
-    }
-  }
-
-  return (
-    <div className="flex-1 min-h-96"> Continue...

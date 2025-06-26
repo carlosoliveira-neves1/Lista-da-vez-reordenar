@@ -121,9 +121,7 @@ function StatusColumn({ title, vendedores, droppableId, onStatusChange }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           {getColumnIcon()}
-          <h2 className="text-lg font-medium text-gray-900">
-            {title} ({vendedores.length})
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900">{title} ({vendedores.length})</h2>
         </div>
         {droppableId === 'espera' && (
           <Button variant="ghost" size="sm" className="text-blue-600">
@@ -133,33 +131,17 @@ function StatusColumn({ title, vendedores, droppableId, onStatusChange }) {
           </Button>
         )}
       </div>
-
       <Droppable droppableId={droppableId}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`min-h-32 p-2 rounded-lg transition-colors ${
-              snapshot.isDraggingOver
-                ? 'bg-blue-50 border-2 border-blue-200 border-dashed'
-                : 'bg-transparent'
-            }`}
-          >
+            className={`min-h-32 p-2 rounded-lg transition-colors ${snapshot.isDraggingOver ? 'bg-blue-50 border-2 border-blue-200 border-dashed' : 'bg-transparent'}`}>
             {vendedores.map((vendedor, index) => (
-              <VendedorCard
-                key={vendedor.id}
-                vendedor={vendedor}
-                index={index}
-                onStatusChange={onStatusChange}
-              />
+              <VendedorCard key={vendedor.id} vendedor={vendedor} index={index} onStatusChange={onStatusChange} />
             ))}
             {provided.placeholder}
-
-            {vendedores.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                <p>Nenhum vendedor nesta lista</p>
-              </div>
-            )}
+            {vendedores.length === 0 && <p className="text-center py-8 text-gray-400">Nenhum vendedor nesta lista</p>}
           </div>
         )}
       </Droppable>
@@ -171,12 +153,11 @@ function App() {
   const [vendedores, setVendedores] = useState(() => {
     const stored = localStorage.getItem('vendedores')
     if (stored) {
-      return JSON.parse(stored, (k, v) =>
-        k === 'tempoServico' && v ? new Date(v) : v
-      )
+      return JSON.parse(stored, (key, value) => key === 'tempoServico' && value ? new Date(value) : value)
     }
     return initialVendedores
   })
+
   useEffect(() => {
     localStorage.setItem('vendedores', JSON.stringify(vendedores))
   }, [vendedores])
@@ -186,105 +167,92 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const handleDragEnd = (result) => {
-    const { destination, source, draggableId } = result
-
+    const { source, destination, draggableId } = result
     if (!destination) return
-
-    // sem movimento
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return
-    }
-
-    // reordena dentro da mesma coluna
-    if (destination.droppableId === source.droppableId) {
+    if (source.droppableId === destination.droppableId && source.index === destination.index) return
+    if (source.droppableId === destination.droppableId) {
       const status = source.droppableId
-      const reordered = vendedores.filter(v => v.status === status)
-      const [moved] = reordered.splice(source.index, 1)
-      reordered.splice(destination.index, 0, moved)
-
-      const newEspera = status === 'espera'
-        ? reordered
-        : vendedores.filter(v => v.status === 'espera')
-      const newServico = status === 'servico'
-        ? reordered
-        : vendedores.filter(v => v.status === 'servico')
-      const newFora = status === 'fora'
-        ? reordered
-        : vendedores.filter(v => v.status === 'fora')
-
-      setVendedores([...newEspera, ...newServico, ...newFora])
-      return
+      const list = Array.from(vendedores.filter(v => v.status === status))
+      const [moved] = list.splice(source.index, 1)
+      list.splice(destination.index, 0, moved)
+      const others = vendedores.filter(v => v.status !== status)
+      setVendedores([...others.filter(v => v.status !== status), ...list])
+    } else {
+      handleStatusChange(draggableId, destination.droppableId)
     }
-
-    // movido para outra coluna: apenas atualiza status
-    handleStatusChange(draggableId, destination.droppableId)
   }
 
-  const handleStatusChange = (vendedorId, novoStatus) => {
+  const handleStatusChange = (id, novoStatus) => {
     setVendedores(prev => {
-      const old = prev.find(v => v.id === vendedorId)
+      const old = prev.find(v => v.id === id)
       if (!old) return prev
-
       const updated = {
         ...old,
         status: novoStatus,
-        tempoServico:
-          novoStatus === 'servico' && old.status !== 'servico'
-            ? new Date()
-            : novoStatus !== 'servico'
-              ? null
-              : old.tempoServico
+        tempoServico: novoStatus === 'servico' && old.status !== 'servico' ? new Date() : (novoStatus !== 'servico' ? null : old.tempoServico)
       }
-
-      const without = prev.filter(v => v.id !== vendedorId)
-      const espera  = without.filter(v => v.status === 'espera')
+      const without = prev.filter(v => v.id !== id)
+      const espera = without.filter(v => v.status === 'espera')
       const servico = without.filter(v => v.status === 'servico')
-      const fora    = without.filter(v => v.status === 'fora')
-
-      if (novoStatus === 'espera') {
-        return [...espera, updated, ...servico, ...fora]
-      }
-      if (novoStatus === 'servico') {
-        return [...espera, ...servico, updated, ...fora]
-      }
-      if (novoStatus === 'fora') {
-        return [...espera, ...servico, ...fora, updated]
-      }
-
+      const fora = without.filter(v => v.status === 'fora')
+      if (novoStatus === 'espera') return [...espera, updated, ...servico, ...fora]
+      if (novoStatus === 'servico') return [...espera, ...servico, updated, ...fora]
+      if (novoStatus === 'fora') return [...espera, ...servico, ...fora, updated]
       return prev
     })
   }
 
   const handleAdminAccess = () => setIsAdmin(true)
-  const handleAdminLogin = (success) => success && setIsLoggedIn(true)
-  const handleAdminLogout = () => {
-    setIsAdmin(false)
-    setIsLoggedIn(false)
-  }
+  const handleAdminLogin = success => success && setIsLoggedIn(true)
+  const handleAdminLogout = () => { setIsAdmin(false); setIsLoggedIn(false) }
 
   if (isAdmin && !isLoggedIn) return <AdminLogin onLogin={handleAdminLogin} />
-  if (isAdmin && isLoggedIn) {
-    return (
-      <AdminPanel
-        vendedores={vendedores}
-        onVendedoresChange={setVendedores}
-        onLogout={handleAdminLogout}
-      />
-    )
-  }
+  if (isAdmin && isLoggedIn) return <AdminPanel vendedores={vendedores} onVendedoresChange={setVendedores} onLogout={handleAdminLogout} />
 
-  const vendedoresEspera = vendedores.filter(v => v.status === 'espera')
-  const vendedoresServico = vendedores.filter(v => v.status === 'servico')
-  const vendedoresFora = vendedores.filter(v => v.status === 'fora')
+  const esperaList = vendedores.filter(v => v.status === 'espera')
+  const servicoList = vendedores.filter(v => v.status === 'servico')
+  const foraList = vendedores.filter(v => v.status === 'fora')
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm"><Menu className="w-5 h-5" /></Button>
             <h1 className="text-xl font-semibold text-gray-900">Lista da Vez</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 text-sm text-gray-500">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <span>Online</span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleAdminAccess}><Shield className="w-5 h-5" /></Button>
+            <Button variant="ghost" size="sm"><Settings className="w-5 h-5" /></Button>
+          </div>
+        </div>
+      </header>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full justify-start bg-white border-b border-gray-200 rounded-none h-12 px-4">
+          <TabsTrigger value="lista" className="flex items-center space-x-2"><Users className="w-4 h-4" /><span>Lista da Vez</span></TabsTrigger>
+          <TabsTrigger value="campanhas" className="flex items-center space-x-2"><span>Campanhas</span></TabsTrigger>
+          <TabsTrigger value="rankings" className="flex items-center space-x-2"><BarChart3 className="w-4 h-4" /><span>Rankings</span></TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="lista" className="mt-0">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <StatusColumn title="Lista de espera" vendedores={esperaList} droppableId="espera" onStatusChange={handleStatusChange} />
+              <StatusColumn title="Em serviço" vendedores={servicoList} droppableId="servico" onStatusChange={handleStatusChange} />
+              <StatusColumn title="Fora da loja" vendedores={foraList} droppableId="fora" onStatusChange={handleStatusChange} />
+            </div>
+          </DragDropContext>
+        </TabsContent>
+        <TabsContent value="campanhas" className="mt-0"><div className="p-4 text-center py-12"><h3 className="text-lg font-medium text-gray-900 mb-2">Campanhas</h3><p className="text-gray-500">Funcionalidade em desenvolvimento</p></div></TabsContent>
+        <TabsContent value="rankings" className="mt-0"><div className="p-4 text-center py-12"><h3 className="text-lg font-medium text-gray-900 mb-2">Rankings</h3><p className="text-gray-500">Funcionalidade em desenvolvimento</p></div></TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+export default App
