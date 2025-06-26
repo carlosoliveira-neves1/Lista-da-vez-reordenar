@@ -17,9 +17,9 @@ function AdminLogin({ onLogin }) {
     setLoading(true)
     setError('')
 
-    // Simular autenticação (em produção, isso seria uma chamada para API)
+    // Simular autenticação: usuário fixo 'admin' e senha 'Mudar@1234'
     setTimeout(() => {
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
+      if (credentials.username === 'admin' && credentials.password === 'Mudar@1234') {
         onLogin(true)
       } else {
         setError('Usuário ou senha incorretos')
@@ -38,7 +38,7 @@ function AdminLogin({ onLogin }) {
           <CardTitle className="text-2xl font-bold">Painel Administrativo</CardTitle>
           <p className="text-gray-600">Faça login para gerenciar vendedores</p>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -52,7 +52,7 @@ function AdminLogin({ onLogin }) {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <div className="relative">
@@ -71,11 +71,7 @@ function AdminLogin({ onLogin }) {
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
+                  {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
                 </Button>
               </div>
             </div>
@@ -90,12 +86,6 @@ function AdminLogin({ onLogin }) {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
-          
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Credenciais de teste:</p>
-            <p>Usuário: <code className="bg-gray-100 px-1 rounded">admin</code></p>
-            <p>Senha: <code className="bg-gray-100 px-1 rounded">admin123</code></p>
-          </div>
         </CardContent>
       </Card>
     </div>
@@ -103,4 +93,3 @@ function AdminLogin({ onLogin }) {
 }
 
 export default AdminLogin
-
